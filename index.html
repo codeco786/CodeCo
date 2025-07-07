@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCo - Digital Solutions for Your Business</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .h1-font { font-family: 'Playfair Display', serif; } /* New font for H1 and H2 elements */
+        .service-tab.active { border-color: #F59E0B; background-color: #FFFBEB; }
+        .service-tab:not(.active) { border-color: #E5E7EB; }
+        .service-content { display: none; }
+        .service-content.active { display: block; }
+        .menu-toggle .bar { transition: all 0.3s ease-in-out; }
+        .menu-toggle.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .menu-toggle.active .bar:nth-child(2) { opacity: 0; }
+        .menu-toggle.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+        .message-box-overlay { z-index: 50; }
+
+        /* Slider specific styles - Adjusted for standalone section */
+        .slider-container {
+            position: relative; /* Changed from absolute */
+            width: 100%;
+            height: 70vh; /* Defined height for the slider section */
+            overflow: hidden;
+            z-index: 1;
+            border-radius: 0.75rem; /* Added rounded corners */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2); /* Added shadow */
+        }
+        .slides {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: none; /* Hidden by default */
+            position: relative;
+        }
+        .slide.active {
+            display: block; /* Show active slide */
+        }
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the entire container */
+            display: block;
+        }
+        .slider-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.45); /* Adjusted opacity for better visibility */
+            z-index: 2; /* Above image, below text content */
+        }
+        .slider-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            transition: background-color 0.3s ease;
+            z-index: 3; /* Above overlay and images */
+        }
+        .slider-button:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .prev-button { left: 10px; }
+        .next-button { right: 10px; }
+        .slider-dots {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 3; /* Above overlay and images */
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .dot.active {
+            background-color: #F59E0B; /* Amber color */
+        }
+
+        /* Added styles for button hover effects */
+        .action-button {
+            transition: all 0.3s ease-in-out;
+        }
+        .action-button:hover {
+            transform: translateY(-3px); /* Slightly less aggressive */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Added subtle shadow */
+        }
+
+        /* Enhanced Home Section Text Shadow for better contrast */
+        #home h1 {
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8); /* Stronger shadow for readability */
+            color: white; /* Ensure text color is white for contrast */
+        }
+        #home p {
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.7); /* Stronger shadow for readability */
+            color: white; /* Ensure text color is white for contrast */
+        }
+
+        /* Custom animation for logo and text */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9); /* Slightly smaller initial scale */
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-fadeInScale {
+            animation: fadeInScale 0.8s ease-out forwards;
+        }
+
+        /* Custom animation for navigation links */
+        header nav a {
+            position: relative;
+            overflow: hidden;
+        }
+
+        header nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #F59E0B; /* Amber underline */
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-out;
+        }
+
+        header nav a:hover::after {
+            transform: translateX(0);
+        }
+
+        /* Header scroll hide/show animation */
+        .header-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-100%); /* Slide up when hidden */
+        }
+        header {
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0.3s ease-out;
+        }
+
+        /* New styles for scroll-reveal animation for sections */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(30px); /* Slightly more pronounced initial translation */
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* Slower and smoother */
+        }
+
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Service Tab Hover/Active Effect */
+        .service-tab {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .service-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #FCD34D, #F59E0B); /* Amber gradient */
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease-out;
+            z-index: -1;
+            border-radius: 0.5rem; /* Match parent border-radius */
+        }
+        .service-tab:hover::before {
+            transform: scaleX(1);
+        }
+        .service-tab:hover h3, .service-tab:hover p {
+            color: white; /* Text color changes on hover */
+            transition: color 0.3s ease-out;
+        }
+        .service-tab.active::before {
+            transform: scaleX(1);
+            opacity: 0.9; /* Slightly less opaque when active, increased from 0.8 */
+        }
+        .service-tab.active h3, .service-tab.active p {
+            color: white;
+        }
+
+        /* Team Member Image Hover Animation */
+        .team-member img {
+            transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+        }
+
+        .team-member img:hover {
+            transform: scale(1.08); /* Slightly enlarge the image more */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); /* Add a stronger shadow */
+        }
+
+        /* Renamed: Home section background image to cover-image */
+        .cover-image {
+            background-image: url('images/your-cover-background-image.jpg'); /* Corrected path for your image */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative; /* Needed for overlay */
+        }
+
+        /* Renamed: Overlay for home background image to ensure text readability */
+        .cover-image::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
+            z-index: 1; /* Below text, above image */
+        }
+
+        #home .container {
+            position: relative;
+            z-index: 2; /* Ensure text content is above the overlay */
+        }
+
+
+        @media (max-width: 768px) {
+            .slider-button {
+                padding: 8px 12px;
+                font-size: 1.2rem;
+            }
+            /* Adjust logo and text size for smaller screens */
+            .header-logo-group img {
+                max-height: 60px; /* Smaller on mobile */
+                max-width: 90px;
+            }
+            .header-logo-group span {
+                font-size: 2rem; /* Smaller on mobile */
+            }
+            #home h1 {
+                font-size: 2.5rem; /* Adjust for mobile */
+            }
+            #home p {
+                font-size: 1rem; /* Adjust for mobile */
+            }
+            .slider-container {
+                height: 50vh; /* Adjust height for smaller screens */
+            }
+        }
+    </style>
+</head>
+<body class="bg-white text-stone-800">
+
+    <header id="main-header" class="bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-24">
+                <div class="flex-shrink-0 flex items-center space-x-0 header-logo-group">
+                    <a href="#home" class="flex items-center space-x-0 animate-fadeInScale">
+                        <img class="max-h-32 max-w-48 object-contain" src="images/logo.png" alt="CodeCo Logo">
+                        <span class="text-5xl font-black text-amber-500">CodeCo</span>
+                    </a>
+                </div>
+                <nav class="hidden md:flex md:items-center md:space-x-4 lg:space-x-8">
+                    <a href="#home" class="text-stone-700 hover:text-amber-600 px-3 py-2 rounded-md text-base font-medium transition-colors nav-link-hover">Home</a>
+                    <a href="#services" class="text-stone-700 hover:text-amber-600 px-3 py-2 rounded-md text-base font-medium transition-colors nav-link-hover">Services</a>
+                    <a href="#team" class="text-stone-700 hover:text-amber-600 px-3 py-2 rounded-md text-base font-medium transition-colors nav-link-hover">Our Team</a>
+                    <a href="#contact" class="text-white bg-amber-600 hover:bg-amber-700 px-6 py-3 rounded-full text-base font-semibold transition-all shadow-md action-button">Contact Us</a>
+                </nav>
+                <div class="md:hidden">
+                    <button id="menu-toggle" type="button" class="menu-toggle inline-flex items-center justify-center p-2 rounded-md text-stone-500 hover:text-stone-800 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-500" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <div class="space-y-1.5">
+                           <div class="bar w-7 h-0.5 bg-current"></div>
+                           <div class="bar w-7 h-0.5 bg-current"></div>
+                           <div class="bar w-7 h-0.5 bg-current"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="md:hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="text-stone-600 hover:bg-stone-100 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium transition-colors">Home</a>
+                <a href="#services" class="text-stone-600 hover:bg-stone-100 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium transition-colors">Services</a>
+                <a href="#team" class="text-stone-600 hover:bg-stone-100 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium transition-colors">Our Team</a>
+                <a href="#contact" class="text-stone-600 hover:bg-stone-100 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium transition-colors">Contact Us</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="relative py-20 sm:py-24 lg:py-32 flex items-center justify-center min-h-screen fade-in-section cover-image">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative text-center text-white">
+                <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight h1-font leading-tight"> Innovate Your Business with Cutting-Edge Digital Solutions
+                </h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg sm:text-xl font-light"> At CodeCo, we don’t just build websites; we craft comprehensive digital experiences that empower your brand, from stunning graphic design and robust web development to impactful social media strategies.
+                </p>
+                <div class="mt-10">
+                    <a href="#image-carousel-section" class="inline-block bg-amber-600 text-white px-8 py-3.5 rounded-full text-base font-semibold action-button shadow-lg hover:bg-amber-700 transform hover:-translate-y-1">Discover Our Expertise</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- New section for the Image Slider - moved here -->
+        <section id="image-carousel-section" class="py-16 sm:py-24 lg:py-32 bg-stone-100 fade-in-section">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 h1-font">Our Projects in Action: A Visual Showcase</h2>
+                    <p class="mt-4 text-lg text-stone-600 max-w-3xl mx-auto">
+                        Explore some of our recent work and see the quality we deliver across various digital domains.
+                    </p>
+                </div>
+                <div class="slider-container">
+                    <div class="slides">
+                        <div class="slide active">
+                            <img src="images/slide1.jpg" alt="Creative office workspace with modern tech">
+                        </div>
+                        <div class="slide">
+                            <img src="images/slide2.jpg" alt="Team collaborating on a digital project">
+                        </div>
+                        <div class="slide">
+                            <img src="images/slide3.jpg" alt="Graphic designer working on a tablet">
+                        </div>
+                        <div class="slide">
+                            <img src="images/slide4.jpg" alt="Clean code on a computer screen">
+                        </div>
+                        <div class="slide">
+                            <img src="images/slide5.jpg" alt="Social media icons representing digital marketing">
+                        </div>
+                    </div>
+                    <div class="slider-overlay"></div>
+                    <button class="slider-button prev-button" aria-label="Previous slide">&#10094;</button>
+                    <button class="slider-button next-button" aria-label="Next slide">&#10095;</button>
+                    <div class="slider-dots">
+                        <span class="dot active" data-slide-index="0" aria-label="Go to slide 1"></span>
+                        <span class="dot" data-slide-index="1" aria-label="Go to slide 2"></span>
+                        <span class="dot" data-slide-index="2" aria-label="Go to slide 3"></span>
+                        <span class="dot" data-slide-index="3" aria-label="Go to slide 4"></span>
+                        <span class="dot" data-slide-index="4" aria-label="Go to slide 5"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="services" class="py-16 sm:py-24 bg-white fade-in-section">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 h1-font">Unleash Your Potential: Our Comprehensive Digital Services</h2>
+                    <p class="mt-4 text-lg text-stone-600 max-w-3xl mx-auto"> Discover tailored digital solutions engineered for unparalleled growth and lasting impact. Click a service below to see how our expertise can empower your business.
+                    </p>
+                </div>
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                    <button class="service-tab p-6 border-2 border-stone-200 rounded-lg text-left action-button focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2" data-target="service-gd">
+                        <div class="flex items-center space-x-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette text-amber-500"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.83 0 1.64-.07 2.43-.21 1.12-.23 2.2-.79 3.18-1.57 1.1-.88 1.97-1.97 2.63-3.18C21.93 15.64 22 14.83 22 14c0-5.5-4.5-10-10-10Z"/><path d="M12.25 6.25 10 10l-1.5 1.5a2.5 2.5 0 0 1-3.5-3.5L8 7.75"/><path d="M13.5 10.5 14 17l-1.5 1.5a2.5 2.5 0 0 1-3.5-3.5L11 15.5"/></svg>
+                            <h3 class="text-xl font-semibold text-stone-800">Graphic Design</h3>
+                        </div>
+                        <p class="mt-2 text-stone-600">We create stunning visual designs that define and elevate your brand identity.</p>
+                    </button>
+                    <button class="service-tab p-6 border-2 border-stone-200 rounded-lg text-left action-button focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2" data-target="service-wd">
+                        <div class="flex items-center space-x-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code text-amber-500"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                            <h3 class="text-xl font-semibold text-stone-800">Web Development</h3>
+                        </div>
+                        <p class="mt-2 text-stone-600">Build a powerful, responsive, and user-friendly website tailored to your needs.</p>
+                    </button>
+                    <button class="service-tab p-6 border-2 border-stone-200 rounded-lg text-left action-button focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2" data-target="service-seo">
+                        <div class="flex items-center space-x-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search text-amber-500"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <h3 class="text-xl font-semibold text-stone-800">SEO Optimization</h3>
+                        </div>
+                        <p class="mt-2 text-stone-600">Boost your online visibility and drive organic traffic with expert SEO strategies.</p>
+                    </button>
+                    <button class="service-tab p-6 border-2 border-stone-200 rounded-lg text-left action-button focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2" data-target="service-sd">
+                        <div class="flex items-center space-x-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu text-amber-500"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M20 15h2"/><path d="M9 2v2"/><path d="M9 20v2"/><path d="M2 9h2"/><path d="M20 9h2"/></svg>
+                            <h3 class="text-xl font-semibold text-stone-800">Software Development</h3>
+                        </div>
+                        <p class="mt-2 text-stone-600">Custom software solutions engineered to streamline your operations and innovate your business.</p>
+                    </button>
+                    <button class="service-tab p-6 border-2 border-stone-200 rounded-lg text-left action-button focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2" data-target="service-ec">
+                        <div class="flex items-center space-x-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart text-amber-500"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                            <h3 class="text-xl font-semibold text-stone-800">E-commerce Solutions</h3>
+                        </div>
+                        <p class="mt-2 text-stone-600">Empower your business with secure and scalable online stores that drive sales.</p>
+                    </button>
+                    <button class="service-tab p-6 border-2 border-stone-200 rounded-lg text-left action-button focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2" data-target="service-sm">
+                        <div class="flex items-center space-x-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share-2 text-amber-500"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+                            <h3 class="text-xl font-semibold text-stone-800">Social Media Marketing</h3>
+                        </div>
+                        <p class="mt-2 text-stone-600">Engage your audience, build community, and amplify your brand's voice online.</p>
+                    </button>
+                </div>
+
+                    <div class="mt-10 bg-stone-50 p-6 sm:p-8 rounded-lg min-h-[250px] shadow-inner">
+                        <div id="service-gd" class="service-content">
+                            <h4 class="text-2xl font-bold text-stone-800 mb-4">Graphic Design Services Include:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700">
+                                <li>Custom Logo Design & Brand Identity Kits</li>
+                                <li>Brochure, Flyer & Marketing Collateral Design</li>
+                                <li>Stunning Web Graphics & Digital Banners</li>
+                                <li>Compelling Social Media Visuals</li>
+                                <li>Professional Presentation Design</li>
+                            </ul>
+                        </div>
+                        <div id="service-wd" class="service-content">
+                            <h4 class="text-2xl font-bold text-stone-800 mb-4">Web Development Services Include:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700">
+                                <li>Bespoke Website Development from Scratch</li>
+                                <li>Fully Responsive & Mobile-First Web Design</li>
+                                <li>Robust E-commerce Platform Integration</li>
+                                <li>Intuitive Content Management Systems (CMS) Development</li>
+                                <li>Ongoing Website Maintenance & Support</li>
+                            </ul>
+                        </div>
+                        <div id="service-seo" class="service-content">
+                            <h4 class="text-2xl font-bold text-stone-800 mb-4">SEO Optimization Services Include:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700">
+                                <li>Comprehensive Website SEO Audit</li>
+                                <li>In-depth Keyword Research & Strategy</li>
+                                <li>On-Page & Technical SEO Optimization</li>
+                                <li>Strategic Link Building & Off-Page SEO</li>
+                                <li>Content Optimization & SEO Copywriting</li>
+                            </ul>
+                        </div>
+                        <div id="service-sd" class="service-content">
+                            <h4 class="text-2xl font-bold text-stone-800 mb-4">Software Development Services Include:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700">
+                                <li>Custom Web Application Development</li>
+                                <li>Cross-Platform Mobile App Development (iOS/Android)</li>
+                                <li>Enterprise Desktop Application Solutions</li>
+                                <li>API Development & Seamless Integration</li>
+                                <li>Scalable Cloud-Based Software Solutions</li>
+                            </ul>
+                        </div>
+                        <div id="service-ec" class="service-content">
+                            <h4 class="text-2xl font-bold text-stone-800 mb-4">E-commerce Solutions Include:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700">
+                                <li>E-commerce Platform Setup & Customization (Shopify, WooCommerce, etc.)</li>
+                                <li>Bespoke E-commerce Website Development</li>
+                                <li>Secure Payment Gateway Integration</li>
+                                <li>Efficient Product Catalog & Inventory Management</li>
+                                <li>Ongoing Security Enhancements & Maintenance</li>
+                            </ul>
+                        </div>
+                        <div id="service-sm" class="service-content">
+                            <h4 class="text-2xl font-bold text-stone-800 mb-4">Social Media Marketing Services Include:</h4>
+                            <ul class="list-disc list-inside space-y-2 text-stone-700">
+                                <li>Strategic Social Media Strategy Development</li>
+                                <li>Engaging Content Creation & Curation</li>
+                                <li>Proactive Community Management & Engagement</li>
+                                <li>Targeted Paid Social Media Advertising Campaigns</li>
+                                <li>Comprehensive Performance Analytics & Reporting</li>
+                            </ul>
+                        </div>
+                        <div id="service-placeholder" class="service-content active text-center flex items-center justify-center h-full">
+                            <p class="text-stone-500 text-xl font-medium">Please select a service above to view details<br>and discover how we can help your business thrive.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="team" class="py-16 sm:py-24 bg-stone-50 fade-in-section">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 h1-font">The Architects of Innovation: Meet the CodeCo Team</h2>
+                    <p class="mt-4 text-lg text-stone-600 max-w-3xl mx-auto">
+                        Meet the heart of CodeCo: a team of passionate, dedicated innovators committed to transforming your ideas into thriving digital realities.
+                    </p>
+                </div>
+                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+                    <div class="text-center team-member">
+                        <img class="w-36 h-36 mx-auto rounded-full object-cover shadow-xl border-4 border-amber-300" src="images/team1.jpg" alt="Team Member 1 - Mr. Hasan">
+                        <h3 class="mt-6 text-xl font-semibold text-stone-900">Mr. Hasan</h3>
+                        <p class="text-amber-700 font-medium">Lead Software Developer</p>
+                    </div>
+                    <div class="text-center team-member">
+                        <img class="w-36 h-36 mx-auto rounded-full object-cover shadow-xl border-4 border-amber-300" src="images/team2.jpg" alt="Team Member 2 - Mr. Noor-ul-Hasan">
+                        <h3 class="mt-6 text-xl font-semibold text-stone-900">Mr. Noor-ul-Hasan</h3>
+                        <p class="text-amber-700 font-medium">Senior Graphic Designer</p>
+                    </div>
+                    <div class="text-center team-member">
+                        <img class="w-36 h-36 mx-auto rounded-full object-cover shadow-xl border-4 border-amber-300" src="images/team3.jpg" alt="Team Member 3 - Mr. Farhan">
+                        <h3 class="mt-6 text-xl font-semibold text-stone-900">Mr. Farhan</h3>
+                        <p class="text-amber-700 font-medium">Chief Web Architect</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="py-16 sm:py-24 bg-white fade-in-section">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-2xl mx-auto text-center">
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 h1-font">Ready to Transform? Let's Build Something Great Together</h2>
+                    <p class="mt-4 text-lg text-stone-600">
+                        Have a project in mind or just want to say hello? Drop us a line. We're eager to hear from you.
+                    </p>
+                </div>
+                <div class="mt-12 max-w-xl mx-auto">
+                    <form id="contact-form" class="space-y-6 bg-stone-50 p-8 rounded-lg shadow-xl">
+                        <div>
+                            <label for="name" class="sr-only">Your Name</label>
+                            <input type="text" id="name" name="name" placeholder="Your Name" required class="block w-full px-4 py-3 rounded-md border-stone-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 transition duration-200">
+                        </div>
+                        <div>
+                            <label for="email" class="sr-only">Your Email</label>
+                            <input type="email" id="email" name="email" placeholder="Your Email" required class="block w-full px-4 py-3 rounded-md border-stone-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 transition duration-200">
+                        </div>
+                        <div>
+                            <label for="message" class="sr-only">Your Message</label>
+                            <textarea id="message" name="message" rows="5" placeholder="Tell us about your project or inquiry..." required class="block w-full px-4 py-3 rounded-md border-stone-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 transition duration-200"></textarea>
+                        </div>
+                        <div>
+                            <button type="submit" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-full shadow-lg text-base font-semibold text-white bg-amber-600 action-button hover:bg-amber-700 transform hover:-translate-y-0.5">
+                                Send Your Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-white">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2025 CodeCo. All Rights Reserved.</p>
+            <div class="mt-6 text-sm">
+                <p class="text-stone-300">
+                    <span class="font-semibold text-amber-400">Phone:</span> +923004292470
+                </p>
+                <p class="text-stone-300 mt-2">
+                    <span class="font-semibold text-amber-400">Email:</span> codeco786@gmail.com
+                </p>
+                <p class="text-stone-300 mt-2">
+                    <span class="font-semibold text-amber-400">Address:</span> PCHS, Lahore, Pakistan
+                </p>
+            </div>
+            <div class="mt-6">
+                <a href="https://www.facebook.com/profile.php?id=61578191246544" target="_blank" rel="noopener noreferrer" class="text-stone-400 hover:text-amber-500 mx-2 transition-colors" aria-label="Facebook">
+                    <svg class="inline-block h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
+                </a>
+                <a href="https://www.instagram.com/code.co786/" target="_blank" rel="noopener noreferrer" class="text-stone-400 hover:text-amber-500 mx-2 transition-colors" aria-label="Instagram">
+                    <svg class="inline-block h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.001 2.001c-3.267 0-3.666.015-4.946.071-1.28.056-2.164.26-2.925.568-.78.314-1.428.718-2.072 1.361s-1.047 1.293-1.36 2.072c-.309.761-.513 1.645-.568 2.925-.056 1.28-.07 1.679-.07 4.946s.014 3.666.07 4.946c.056 1.28.26 2.164.568 2.925.314.78.718 1.428 1.361 2.072s1.293 1.047 2.072 1.36c.761.309 1.645.513 2.925.568 1.28.056 1.679.07 4.946.07s3.666-.014 4.946-.07c1.28-.056 2.164-.26 2.925-.568.78-.314 1.428-.718 2.072-1.361s1.047-1.293 1.36-2.072c.309-.761.513-1.645.568-2.925.056-1.28.07-1.679.07-4.946s-.014-3.666-.07-4.946c-.056-1.28-.26-2.164-.568-2.925-.314-.78-.718-1.428-1.361-2.072s-1.293-1.047-2.072-1.36c-.761-.309-1.645-.513-2.925-.568-1.28-.056-1.679-.07-4.946-.07zm0 2.001c3.21 0 3.593.015 4.86.07c1.173.051 1.792.24 2.215.405.42.165.733.376 1.018.66.284.285.495.598.66 1.018.165.423.354 1.042.405 2.215.056 1.267.07 1.65.07 4.86s-.014 3.593-.07 4.86c-.051 1.173-.24 1.792-.405 2.215-.165.42-.376.733-.66 1.018-.285.284-.495.598-.66 1.018-.165.423-.354 1.042-.405 2.215-.056 1.267-.07-1.65-.07-4.86s.014-3.593.07-4.86c.051-1.173.24-1.792.405-2.215.165-.42.376-.733.66-1.018.284-.285.598-.495 1.018-.66.423-.165 1.042-.354 2.215-.405 1.267-.056 1.65-.07 4.86-.07zM12.001 7.427a4.573 4.573 0 1 0 0 9.146 4.573 4.573 0 0 0 0-9.146zm0 2.001a2.572 2.572 0 1 1 0 5.145 2.572 2.572 0 0 1 0-5.145zm6.402-4.498a1.272 1.272 0 1 0 0 2.545 1.272 1.272 0 0 0 0-2.545z" clip-rule="evenodd" /></svg>
+                </a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="text-stone-400 hover:text-amber-500 mx-2 transition-colors" aria-label="LinkedIn">
+                    <svg class="inline-block h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.453 2.953c-1.827-.999-3.327-1.124-4.453-.193-.974.808-1.547 2.05-1.547 3.518V12c0 2.001 1.499 3.82 3.499 3.82h1.5v6.18h4.5v-6.18h2c1.799 0 3.5-1.62 3.5-3.5V6.75C20.453 4.417 17.513 2.65 14.953 2.153 14.28 2.006 13.564 1.948 12.8 1.948h-1.6c-.66 0-1.32-.008-1.953.075zM15 12h-3V6h3c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2z" clip-rule="evenodd" /></svg>
+                </a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="text-stone-400 hover:text-amber-500 mx-2 transition-colors" aria-label="Twitter">
+                    <svg class="inline-block h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M.952 2.001C.426 2.001 0 2.426 0 2.952v18.096c0 .526.426.952.952.952h18.096c.526 0 .952-.426.952-.952V2.952c0-.526-.426-.952-.952-.952H.952zm5.794 13.38H3.376V8.622h3.37V15.38zm-1.685-8.529c-1.077 0-1.916-.867-1.916-1.936s.839-1.936 1.916-1.936c1.066 0 1.916.867 1.916 1.936s-.85 1.936-1.916 1.936zM18.624 1.38h-3.374v-2.07c0-.49-.009-.968-.018-1.428-1.229 0-1.246.711-1.246 1.455V15.38h-3.37V8.622h3.37v1.456c.45-.632 1.34-1.547 2.997-1.547 3.037 0 5.312 1.948 5.312 6.136V15.38z" clip-rule="evenodd" /></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="message-box-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Menu Toggle
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.style.display = 'none';
+
+            menuToggle.addEventListener('click', () => {
+                const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+                menuToggle.setAttribute('aria-expanded', !isExpanded);
+                menuToggle.classList.toggle('active');
+                mobileMenu.style.display = isExpanded ? 'none' : 'block';
+            });
+
+            // Close mobile menu when a link is clicked
+            document.querySelectorAll('#mobile-menu a, header nav:not(#mobile-menu) a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (mobileMenu.style.display === 'block') {
+                         menuToggle.click();
+                    }
+                });
+            });
+
+            // Services Tab Interaction
+            const serviceTabs = document.querySelectorAll('.service-tab');
+            const serviceContents = document.querySelectorAll('.service-content');
+            const servicePlaceholder = document.getElementById('service-placeholder');
+            const serviceContentArea = document.querySelector('.bg-stone-50.p-6.sm\\:p-8.rounded-lg'); // Select the main content area for scrolling
+
+            // Initialize: show placeholder and set first tab active if no prior selection
+            if (!document.querySelector('.service-tab.active')) {
+                servicePlaceholder.classList.add('active');
+            }
+
+
+            serviceTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.dataset.target;
+
+                    // Remove active from all tabs and content
+                    serviceTabs.forEach(t => t.classList.remove('active'));
+                    serviceContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+
+                    // Add active to clicked tab and its content
+                    const activeContent = document.getElementById(targetId);
+                    tab.classList.add('active');
+                    activeContent.classList.add('active');
+
+                    // Scroll the service content area into view smoothly
+                    if (serviceContentArea) {
+                        serviceContentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            // Contact Form Validation
+            const contactForm = document.getElementById('contact-form');
+            contactForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const message = document.getElementById('message').value.trim();
+
+                if (!name || !email || !message) {
+                    showMessageBox('Input Error', 'Please fill in all the required fields!');
+                    return;
+                }
+
+                if (!validateEmail(email)) {
+                    showMessageBox('Input Error', 'Please enter a valid email address.');
+                    return;
+                }
+
+                showMessageBox('Success!', 'Your message has been sent successfully. We will get back to you shortly.');
+                contactForm.reset();
+            });
+
+            function validateEmail(email) {
+                const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+                return regex.test(email);
+            }
+
+            function showMessageBox(title, message) {
+                const container = document.getElementById('message-box-container');
+                const overlay = document.createElement('div');
+                overlay.className = 'message-box-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4';
+
+                const box = document.createElement('div');
+                box.className = 'bg-white rounded-lg shadow-xl p-6 sm:p-8 max-w-sm w-full text-center';
+
+                const titleEl = document.createElement('h3');
+                titleEl.className = 'text-xl font-bold text-stone-800';
+                titleEl.textContent = title;
+
+                const msgEl = document.createElement('p');
+                msgEl.className = 'mt-2 text-stone-600';
+                msgEl.textContent = message;
+
+                const btn = document.createElement('button');
+                btn.className = 'mt-6 w-full bg-amber-600 text-white px-4 py-2 rounded-full hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors';
+                btn.textContent = 'OK';
+
+                btn.onclick = () => container.innerHTML = '';
+
+                box.appendChild(titleEl);
+                box.appendChild(msgEl);
+                box.appendChild(btn);
+                overlay.appendChild(box);
+
+                container.innerHTML = '';
+                container.appendChild(overlay);
+            }
+
+            // Image Slider Logic
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            const prevButton = document.querySelector('.prev-button');
+            const nextButton = document.querySelector('.next-button');
+            const totalSlides = slides.length;
+
+            function showSlide(index) {
+                // Hide all slides and remove active class from dots
+                slides.forEach(slide => slide.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+
+                // Show the current slide and activate the corresponding dot
+                if (slides[index]) {
+                    slides[index].classList.add('active');
+                }
+                if (dots[index]) {
+                    dots[index].classList.add('active');
+                }
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                showSlide(currentSlide);
+            }
+
+            function prevSlide() {
+                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                showSlide(currentSlide);
+            }
+
+            // Add event listeners for navigation buttons
+            if (prevButton) {
+                prevButton.addEventListener('click', prevSlide);
+            }
+            if (nextButton) {
+                nextButton.addEventListener('click', nextSlide);
+            }
+
+            // Add event listeners for dots
+            dots.forEach(dot => {
+                dot.addEventListener('click', (event) => {
+                    currentSlide = parseInt(event.target.dataset.slideIndex);
+                    showSlide(currentSlide);
+                });
+            });
+
+            // Auto-play slider
+            setInterval(nextSlide, 5000); // Change slide every 5 seconds
+
+            // Initialize the first slide
+            showSlide(currentSlide);
+
+            // Header scroll hide/show logic
+            const mainHeader = document.getElementById('main-header');
+            let lastScrollY = window.scrollY;
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > lastScrollY && window.scrollY > 100) { // Scrolling down and past 100px
+                    mainHeader.classList.add('header-hidden');
+                } else if (window.scrollY < lastScrollY || window.scrollY <= 100) { // Scrolling up or at the top
+                    mainHeader.classList.remove('header-hidden');
+                }
+                lastScrollY = window.scrollY;
+            });
+
+            // Intersection Observer for scroll-reveal animations
+            const fadeInSections = document.querySelectorAll('.fade-in-section');
+
+            const observerOptions = {
+                root: null, // viewport
+                rootMargin: '0px',
+                threshold: 0.1 // 10% of the section must be visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target); // Stop observing once visible
+                    }
+                });
+            }, observerOptions);
+
+            fadeInSections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
